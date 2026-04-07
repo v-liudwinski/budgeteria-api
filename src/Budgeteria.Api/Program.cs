@@ -110,8 +110,6 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 
 app.Run();
 
-public partial class Program;
-
 static string ResolveConnectionString(string connectionString)
 {
     if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
@@ -136,3 +134,5 @@ static string ResolveConnectionString(string connectionString)
 
     return $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true";
 }
+
+public partial class Program;
