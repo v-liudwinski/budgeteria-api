@@ -1,0 +1,44 @@
+name: budgeteria-api
+region: fra
+services:
+- name: api
+  dockerfile_path: Dockerfile
+  github:
+    repo: v-liudwinski/budgeteria-api
+    branch: main
+    deploy_on_push: true
+  http_port: 8080
+  instance_size_slug: basic-xxs
+  instance_count: 1
+  health_check:
+    http_path: /health
+  envs:
+  - key: Auth0__Domain
+    value: dev-yxsgdvklqy6d6awa.us.auth0.com
+  - key: Auth0__Audience
+    value: https://api.budgeteria.online/
+  - key: Email__SmtpHost
+    value: smtp-relay.brevo.com
+  - key: Email__SmtpPort
+    value: "587"
+  - key: Email__SmtpUser
+    value: a742f1001@smtp-brevo.com
+  - key: Email__SmtpPass
+    value: ""
+    type: SECRET
+  - key: Email__FromEmail
+    value: budgeteria.support@gmail.com
+  - key: Email__FromName
+    value: Budgeteria
+  - key: Email__FrontendUrl
+    value: ""
+  - key: Cors__AllowedOrigins__0
+    value: ""
+  - key: ConnectionStrings__DefaultConnection
+    value: ${db.DATABASE_URL}
+    type: SECRET
+databases:
+- name: db
+  engine: PG
+  version: "16"
+  production: false
