@@ -6,9 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
+// Database — resolve postgres:// URI (e.g. from DigitalOcean) to Npgsql key-value format
+var rawConnStr = builder.Configuration.GetConnectionString("DefaultConnection")!;
+var connStr = ResolveConnectionString(rawConnStr);
 builder.Services.AddDbContext<BudgeteriaDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connStr));
 
 // Auth0 Authentication
 var auth0Domain = builder.Configuration["Auth0:Domain"]
@@ -52,10 +54,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks()
-    .AddNpgSql(
-        builder.Configuration.GetConnectionString("DefaultConnection")!,
-        name: "database",
-        tags: ["db", "ready"]);
+    .AddNpgSql(connStr, name: "database", tags: ["db", "ready"]);
 
 var app = builder.Build();
 
@@ -112,3 +111,28 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 app.Run();
 
 public partial class Program;
+
+static string ResolveConnectionString(string connectionString)
+{
+    if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
+        return connectionString;
+
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var username = Uri.UnescapeDataString(userInfo[0]);
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+    var database = uri.AbsolutePath.TrimStart('/');
+
+    var sslMode = "Require";
+    foreach (var param in uri.Query.TrimStart('?').Split('&'))
+    {
+        var kv = param.Split('=');
+        if (kv.Length == 2 && kv[0].Equals("sslmode", StringComparison.OrdinalIgnoreCase))
+        {
+            sslMode = char.ToUpper(kv[1][0]) + kv[1][1..];
+            break;
+        }
+    }
+
+    return $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true";
+}

@@ -31,9 +31,9 @@ services:
   - key: Email__FromName
     value: Budgeteria
   - key: Email__FrontendUrl
-    value: ""
+    value: https://budgeteria-ui-l4w4n.ondigitalocean.app
   - key: Cors__AllowedOrigins__0
-    value: ""
+    value: https://budgeteria-ui-l4w4n.ondigitalocean.app
   - key: ConnectionStrings__DefaultConnection
     value: ${db.DATABASE_URL}
     type: SECRET
