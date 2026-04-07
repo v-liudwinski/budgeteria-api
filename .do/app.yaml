@@ -37,6 +37,9 @@ services:
   - key: ConnectionStrings__DefaultConnection
     value: ${db.DATABASE_URL}
     type: SECRET
+domains:
+- domain: api.budgeteria.online
+  type: PRIMARY
 databases:
 - name: db
   engine: PG
